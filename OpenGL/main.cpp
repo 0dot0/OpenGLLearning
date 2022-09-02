@@ -33,10 +33,11 @@ const char* fragmentShaderSource =
 "#version 330 core                            \n"
 "out vec4 FragColor;                          \n"
 "in vec4 vertexColor;                         \n"
+"uniform vec4 ourColor;                       \n"
 "                                             \n"
 "void main()                                  \n"
 "{                                            \n"
-"    FragColor = vertexColor;                 \n"
+"    FragColor = ourColor;                    \n"
 "}                                            \n"
 ;
 
@@ -113,9 +114,18 @@ int main()
     glUseProgram(0);
     glBindVertexArray(0);
 
+    double time;
+    float redValue;
+    unsigned int location;
+    location = glGetUniformLocation(shaderProgram, "ourColor");
+
     while (!glfwWindowShouldClose(window))
     {
         ProcessInput(window);
+
+        time = glfwGetTime();
+        redValue = (float)sin(time) / 2.0f + 1.0f;
+        glUniform4f(location, redValue, 0, 0, 1);
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
