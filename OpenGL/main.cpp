@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "Shader.h"
+
 float vertices[] = 
 {
     -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -16,30 +18,6 @@ unsigned int indices[] =
     0, 1, 2,
     2, 1, 3
 };
-
-const char* vertexShaderSource = 
-"#version 330 core                                   \n"
-"layout(location = 6) in vec3 aPos;                  \n"
-"layout(location = 7) in vec3 vertexColor;           \n"
-"out vec3 outVertexColor;                            \n"
-"                                                    \n"
-"void main()                                         \n"
-"{                                                   \n"
-"    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"    outVertexColor = vertexColor;                   \n"
-"}                                                   \n"
-;
-
-const char* fragmentShaderSource =
-"#version 330 core                                                             \n"
-"out vec4 FragColor;                                                           \n"
-"in vec3 outVertexColor;                                                       \n"
-"                                                                              \n"
-"void main()                                                                   \n"
-"{                                                                             \n"
-"    FragColor = vec4(outVertexColor.x, outVertexColor.y, outVertexColor.z, 1);\n"                  
-"}                                                                             \n"
-;
 
 void ProcessInput(GLFWwindow* window)
 {
@@ -95,26 +73,7 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    int shaderProgram;
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    glUseProgram(0);
-    glBindVertexArray(0);
+    Shader shader("VertexShader.vs", "FragmentShader.fs");
 
     while (!glfwWindowShouldClose(window))
     {
@@ -123,8 +82,8 @@ int main()
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        shader.Use();
         glBindVertexArray(VAO);
-        glUseProgram(shaderProgram);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
