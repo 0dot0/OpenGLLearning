@@ -7,7 +7,10 @@ float vertices[] =
 {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+     0.0f,  0.5f, 0.0f,
+     0.0f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
+     0.8f,  0.8f, 0.0f
 };
 
 const char* vertexShaderSource = 
@@ -62,6 +65,8 @@ int main()
     }
 
     glViewport(0, 0, 800, 600);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
@@ -103,7 +108,7 @@ int main()
         glBindVertexArray(VAO);
         glUseProgram(shaderProgram);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
