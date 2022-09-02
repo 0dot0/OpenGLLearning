@@ -125,6 +125,7 @@ int main()
 
         time = glfwGetTime();
         redValue = (float)sin(time) / 2.0f + 1.0f;
+        glUseProgram(shaderProgram);
         glUniform4f(location, redValue, 0, 0, 1);
 
         glClearColor(0, 0, 0, 1);
