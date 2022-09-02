@@ -5,10 +5,10 @@
 
 float vertices[] = 
 {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f,
-     0.8f,  0.8f, 0.0f
+    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+     0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+     0.8f,  0.8f, 0.0f, 1.0f, 0.0f, 1.0f
 };
 
 unsigned int indices[] =
@@ -20,25 +20,25 @@ unsigned int indices[] =
 const char* vertexShaderSource = 
 "#version 330 core                                   \n"
 "layout(location = 6) in vec3 aPos;                  \n"
-"out vec4 vertexColor;                               \n"
+"layout(location = 7) in vec3 vertexColor;           \n"
+"out vec3 outVertexColor;                            \n"
 "                                                    \n"
 "void main()                                         \n"
 "{                                                   \n"
 "    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"    vertexColor = vec4(1, 0, 0, 1);                 \n"  
+"    outVertexColor = vertexColor;                   \n"
 "}                                                   \n"
 ;
 
 const char* fragmentShaderSource =
-"#version 330 core                            \n"
-"out vec4 FragColor;                          \n"
-"in vec4 vertexColor;                         \n"
-"uniform vec4 ourColor;                       \n"
-"                                             \n"
-"void main()                                  \n"
-"{                                            \n"
-"    FragColor = ourColor;                    \n"
-"}                                            \n"
+"#version 330 core                                                             \n"
+"out vec4 FragColor;                                                           \n"
+"in vec3 outVertexColor;                                                       \n"
+"                                                                              \n"
+"void main()                                                                   \n"
+"{                                                                             \n"
+"    FragColor = vec4(outVertexColor.x, outVertexColor.y, outVertexColor.z, 1);\n"                  
+"}                                                                             \n"
 ;
 
 void ProcessInput(GLFWwindow* window)
@@ -86,7 +86,9 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), 0);
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), 0);
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (const void*)(3 * sizeof(GL_FLOAT)));
 
     unsigned int EBO;
     glGenBuffers(1, &EBO);
@@ -114,19 +116,9 @@ int main()
     glUseProgram(0);
     glBindVertexArray(0);
 
-    double time;
-    float redValue;
-    unsigned int location;
-    location = glGetUniformLocation(shaderProgram, "ourColor");
-
     while (!glfwWindowShouldClose(window))
     {
         ProcessInput(window);
-
-        time = glfwGetTime();
-        redValue = (float)sin(time) / 2.0f + 1.0f;
-        glUseProgram(shaderProgram);
-        glUniform4f(location, redValue, 0, 0, 1);
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
