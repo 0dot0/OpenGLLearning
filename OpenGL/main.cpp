@@ -5,19 +5,22 @@
 
 #include "Shader.h"
 
+#include "stb_image.h"
+
 float vertices[] = 
 {
-    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-     0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-     0.8f,  0.8f, 0.0f, 1.0f, 0.0f, 1.0f
+    //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
 };
 
 unsigned int indices[] =
 {
     0, 1, 2,
-    2, 1, 3
-};
+    2, 3, 0
+};//opengl默认为逆时针画法为正面，而本index采用顺时针画法，画的实际上是背面，如果开启背面剔除的话，则无法画出该三角面
 
 void ProcessInput(GLFWwindow* window)
 {
@@ -51,8 +54,8 @@ int main()
     }
 
     glViewport(0, 0, 800, 600);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
 
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
@@ -64,16 +67,46 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), 0);
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0);
     glEnableVertexAttribArray(7);
-    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GL_FLOAT), (const void*)(3 * sizeof(GL_FLOAT)));
+    glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (const void*)(3 * sizeof(GL_FLOAT)));
+    glEnableVertexAttribArray(8);
+    glVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (const void*)(6 * sizeof(GL_FLOAT)));
 
     unsigned int EBO;
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+    unsigned int textureBuffer;
+    glGenTextures(1, &textureBuffer);
+    glBindTexture(GL_TEXTURE_2D, textureBuffer);
+    //设置环绕方式
+    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //设置远近(缩小放大过滤方式)
+    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    stbi_set_flip_vertically_on_load(true);
+    //加载图片 container.jpg该图片为三通道，没有alpha通道
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, NULL);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "load image failed." << std::endl;
+    }
+    stbi_image_free(data);
+
     Shader shader("VertexShader.vs", "FragmentShader.fs");
+
+    shader.UnUse();
+    glBindVertexArray(0);
 
     while (!glfwWindowShouldClose(window))
     {
