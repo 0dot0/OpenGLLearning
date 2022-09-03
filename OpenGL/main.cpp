@@ -7,6 +7,10 @@
 
 #include "stb_image.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 float vertices[] =
 {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -123,6 +127,8 @@ int main()
     }
     stbi_image_free(data2);
 
+    glm::mat4 trans = glm::mat4(1.0f);
+
     Shader shader("VertexShader.vs", "FragmentShader.fs");
 
     shader.Use();
@@ -131,6 +137,17 @@ int main()
     glUniform1i(location, 2);
     location = glGetUniformLocation(shader.m_ProgramID, "ourFace");
     glUniform1i(location, 3);
+    location = glGetUniformLocation(shader.m_ProgramID, "transform");
+    //trans = glm::translate(trans, glm::vec3(-1, 0, 0));
+    //trans = glm::rotate(trans, glm::radians(45.0f), glm::vec3(0, 0, 1));
+    //trans = glm::scale(trans, glm::vec3(2.0f, 2.0f, 2.0f));
+    //因为为列主序 V新=Mt*Mr*Ms*V旧
+    //=============================
+    //需求:箱子缩放0.5倍,然后逆时针旋转90°
+    //trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0, 0, 1));
+    //trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+    //================================
+    //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
 
     shader.UnUse();
     glBindVertexArray(0);
@@ -144,6 +161,10 @@ int main()
 
         shader.Use();
         glBindVertexArray(VAO);
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
