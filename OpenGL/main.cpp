@@ -7,7 +7,7 @@
 
 #include "stb_image.h"
 
-float vertices[] = 
+float vertices[] =
 {
     //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
          0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
@@ -32,7 +32,7 @@ void ProcessInput(GLFWwindow* window)
 
 int main()
 {
-    if(glfwInit() == GLFW_FALSE)
+    if (glfwInit() == GLFW_FALSE)
     {
         std::cout << "glfw init error." << std::endl;
         return EXIT_FAILURE;
@@ -78,9 +78,6 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    unsigned int textureBuffer;
-    glGenTextures(1, &textureBuffer);
-    glBindTexture(GL_TEXTURE_2D, textureBuffer);
     //设置环绕方式
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -89,6 +86,12 @@ int main()
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_set_flip_vertically_on_load(true);
+
+    unsigned int textureBufferA;
+    glGenTextures(1, &textureBufferA);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, textureBufferA);
+
     //加载图片 container.jpg该图片为三通道，没有alpha通道
     int width, height, nrChannels;
     unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, NULL);
@@ -103,7 +106,31 @@ int main()
     }
     stbi_image_free(data);
 
+    unsigned int textureBufferB;
+    glGenTextures(1, &textureBufferB);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, textureBufferB);
+
+    unsigned char* data2 = stbi_load("awesomeface.png", &width, &height, &nrChannels, NULL);
+    if (data2)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "load image failed." << std::endl;
+    }
+    stbi_image_free(data2);
+
     Shader shader("VertexShader.vs", "FragmentShader.fs");
+
+    shader.Use();
+    int location;
+    location = glGetUniformLocation(shader.m_ProgramID, "ourTexture");
+    glUniform1i(location, 2);
+    location = glGetUniformLocation(shader.m_ProgramID, "ourFace");
+    glUniform1i(location, 3);
 
     shader.UnUse();
     glBindVertexArray(0);
