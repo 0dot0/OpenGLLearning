@@ -143,11 +143,17 @@ int main()
     //trans = glm::scale(trans, glm::vec3(2.0f, 2.0f, 2.0f));
     //因为为列主序 V新=Mt*Mr*Ms*V旧
     //=============================
-    //需求:箱子缩放0.5倍,然后逆时针旋转90°
+    //需求:箱子缩放0.5倍,然后顺时针旋转90°(以正z看过去),opengl右手坐标系,以vec3(0,0,1)方向看过去指向屏幕向外
+    //我看向屏幕向里,实际看到的是背面,也说明了
+    //我们实际贴的图贴在了多边形的背面,以负z看过去,则是逆时针旋转90°
     //trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0, 0, 1));
     //trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
     //================================
     //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
+
+    //躺平
+    trans = glm::rotate(trans, glm::radians(-55.0f), glm::vec3(1, 0, 0));
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
 
     shader.UnUse();
     glBindVertexArray(0);
@@ -161,10 +167,10 @@ int main()
 
         shader.Use();
         glBindVertexArray(VAO);
-        trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
+        //trans = glm::mat4(1.0f);
+        //trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0));
+        //trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
