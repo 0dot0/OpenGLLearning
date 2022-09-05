@@ -65,6 +65,20 @@ float vertices[] =
     -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
 
+glm::vec3 cubePositions[] =
+{
+  glm::vec3(0.0f,  0.0f,  0.0f),
+  glm::vec3(2.0f,  5.0f, -15.0f),
+  glm::vec3(-1.5f, -2.2f, -2.5f),
+  glm::vec3(-3.8f, -2.0f, -12.3f),
+  glm::vec3(2.4f, -0.4f, -3.5f),
+  glm::vec3(-1.7f,  3.0f, -7.5f),
+  glm::vec3(1.3f, -2.0f, -2.5f),
+  glm::vec3(1.5f,  2.0f, -2.5f),
+  glm::vec3(1.5f,  0.2f, -1.5f),
+  glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
 unsigned int indices[] =
 {
     0, 1, 2,
@@ -233,7 +247,18 @@ int main()
         //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(trans));
 
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (int i = 0; i < 10; i++)
+        {
+            glm::mat4 modelMat(glm::mat4(1.0f));
+            modelMat = glm::translate(modelMat, cubePositions[i]);
+            //modelMat = glm::rotate(modelMat, glm::radians(-55.0f), glm::vec3(1.0f, 1.0f, 0.0f));
+            location = glGetUniformLocation(shader.m_ProgramID, "modelMat");
+            glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(modelMat));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         glfwPollEvents();
         glfwSwapBuffers(window);
