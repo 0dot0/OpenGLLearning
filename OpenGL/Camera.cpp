@@ -39,6 +39,10 @@ void Camera::Reset()
     m_CameraPosition = glm::vec3(0, 0, 10);
     m_TargetPosition = glm::vec3(0, 0, 0);
     m_WorldUpDirection = glm::normalize(glm::vec3(0, 1, 0));
+
+    m_ZDirection = glm::normalize(m_TargetPosition - m_CameraPosition);
+    m_XDirection = glm::normalize(glm::cross(m_ZDirection, m_WorldUpDirection));
+    m_YDirection = glm::normalize(glm::cross(m_XDirection, m_ZDirection));
 }
 
 void Camera::UpdateCameraZPosition(float zDelta)
