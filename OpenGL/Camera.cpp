@@ -36,7 +36,7 @@ glm::mat4 Camera::GetViewMatrix()
 
 void Camera::Reset()
 {
-    m_CameraPosition = glm::vec3(0, 0, -1);
+    m_CameraPosition = glm::vec3(0, 0, 10);
     m_TargetPosition = glm::vec3(0, 0, 0);
     m_WorldUpDirection = glm::normalize(glm::vec3(0, 1, 0));
 }
@@ -44,6 +44,10 @@ void Camera::Reset()
 void Camera::UpdateCameraZPosition(float zDelta)
 {
     m_CameraPosition.z += zDelta * m_Sensitivity;
+
+    m_ZDirection = glm::normalize(m_TargetPosition - m_CameraPosition);
+    m_XDirection = glm::normalize(glm::cross(m_ZDirection, m_WorldUpDirection));
+    m_YDirection = glm::normalize(glm::cross(m_XDirection, m_ZDirection));
 }
 
 std::ostream& operator <<(std::ostream& stream, const glm::vec3& vector3)

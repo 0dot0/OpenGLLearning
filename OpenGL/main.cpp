@@ -72,12 +72,15 @@ glm::vec3 cubePositions[] =
 };
 #pragma endregion
 
+#pragma region Camera Declare
+//static Camera camera(glm::vec3(0, 0, 10), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+static Camera camera(glm::vec3(0, 0, 10), glm::radians(0.0f), glm::radians(0.0f), glm::vec3(0, 1, 0));
+#pragma endregion
+
+#pragma region Input Declare
 float gLastX;
 float gLastY;
 bool gFirstMouse = true;
-
-//static Camera camera(glm::vec3(0, 0, -3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-static Camera camera(glm::vec3(0, 0, -3), glm::radians(0.0f), glm::radians(0.0f), glm::vec3(0, 1, 0));
 
 static void ProcessInput(GLFWwindow* window)
 {
@@ -141,9 +144,40 @@ static void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 
     camera.ProcessMouseMovement(xDelta, yDelta);
 }
+#pragma endregion
+
+static unsigned int LoadImageToGPU(const char* imageFullName, unsigned int textureIndex)
+{
+    unsigned int ID;
+    glGenTextures(1, &ID);
+    glActiveTexture(textureIndex);
+    glBindTexture(GL_TEXTURE_2D, ID);
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(imageFullName, &width, &height, &nrChannels, NULL);
+    if (data)
+    {
+        if (nrChannels == 3)
+        {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        }
+        else if (nrChannels == 4)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        }
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "load image failed." << std::endl;
+    }
+    stbi_image_free(data);
+
+    return ID;
+}
 
 int main()
 {
+#pragma region glfw init
     if (glfwInit() == GLFW_FALSE)
     {
         std::cout << "glfw init error." << std::endl;
@@ -159,7 +193,9 @@ int main()
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, MouseCallback);
     //glfwSetKeyCallback(window, KeyCallback);
+#pragma endregion
 
+#pragma region glew init
     glewExperimental = true;
     if (glewInit() != GLEW_OK)
     {
@@ -172,7 +208,9 @@ int main()
     //glEnable(GL_CULL_FACE);
     //glCullFace(GL_BACK);
     glEnable(GL_DEPTH_TEST);
+#pragma endregion
 
+#pragma region VAO VBO
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -186,73 +224,50 @@ int main()
     glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), 0);
     glEnableVertexAttribArray(8);
     glVertexAttribPointer(8, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (const void*)(3 * sizeof(GL_FLOAT)));
+#pragma endregion
 
+#pragma region 纹理环绕 纹理过滤
     //设置环绕方式
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     //设置远近(缩小放大过滤方式)
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#pragma endregion
 
+#pragma region load image and set texture
     stbi_set_flip_vertically_on_load(true);
 
     unsigned int textureBufferA;
-    glGenTextures(1, &textureBufferA);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, textureBufferA);
-    //加载图片 container.jpg该图片为三通道，没有alpha通道
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, NULL);
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "load image failed." << std::endl;
-    }
-    stbi_image_free(data);
+    textureBufferA = LoadImageToGPU("container.jpg", GL_TEXTURE2);
 
     unsigned int textureBufferB;
-    glGenTextures(1, &textureBufferB);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, textureBufferB);
-    unsigned char* data2 = stbi_load("awesomeface.png", &width, &height, &nrChannels, NULL);
-    if (data2)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "load image failed." << std::endl;
-    }
-    stbi_image_free(data2);
+    textureBufferB = LoadImageToGPU("awesomeface.png", GL_TEXTURE3);
 
     Shader shader("VertexShader.vert", "FragmentShader.frag");
-
     shader.Use();
     int location;
     location = glGetUniformLocation(shader.m_ProgramID, "ourTexture");
     glUniform1i(location, 2);
     location = glGetUniformLocation(shader.m_ProgramID, "ourFace");
     glUniform1i(location, 3);
+#pragma endregion
 
+#pragma region set Proj
     glm::mat4 modelMat(glm::mat4(1.0f)), viewMat(glm::mat4(1.0f)), projMat(glm::mat4(1.0f));
 
     projMat = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.f);
 
-    location = glGetUniformLocation(shader.m_ProgramID, "modelMat");
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(modelMat));
-    location = glGetUniformLocation(shader.m_ProgramID, "viewMat");
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(viewMat));
     location = glGetUniformLocation(shader.m_ProgramID, "projMat");
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projMat));
+#pragma endregion
 
+#pragma region cancel bind shaderProgram and VAO
     shader.UnUse();
     glBindVertexArray(0);
+#pragma endregion
 
+#pragma region while loop
     while (!glfwWindowShouldClose(window))
     {
         ProcessInput(window);
@@ -263,23 +278,30 @@ int main()
         shader.Use();
         glBindVertexArray(VAO);
 
+#pragma region set ViewMat
         viewMat = camera.GetViewMatrix();
         location = glGetUniformLocation(shader.m_ProgramID, "viewMat");
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(viewMat));
+#pragma endregion
 
-        location = glGetUniformLocation(shader.m_ProgramID, "modelMat");
+#pragma region DrawCall
         for (int i = 0; i < 10; i++)
         {
             modelMat = glm::mat4(1.0f);
             modelMat = glm::translate(modelMat, cubePositions[i]);
+#pragma region set ModelMat
+        location = glGetUniformLocation(shader.m_ProgramID, "modelMat");
             glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(modelMat));
+#pragma endregion
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+#pragma endregion
 
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
+#pragma endregion
 
     glfwTerminate();
     return 0;

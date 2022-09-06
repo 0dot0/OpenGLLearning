@@ -7,8 +7,8 @@
 class Camera
 {
 public:
-    Camera(glm::vec3 cameraPosition = glm::vec3(0, 0, -1), glm::vec3 targetPosition = glm::vec3(0, 0, 0), glm::vec3 worldUpDirection = glm::vec3(0, 1, 0));
-    Camera(glm::vec3 cameraPosition = glm::vec3(0, 0, -1), float pitch = glm::radians(0.0f), float yaw = glm::radians(0.0f), glm::vec3 worldUpDirection = glm::vec3(0, 1, 0));
+    Camera(glm::vec3 cameraPosition = glm::vec3(0, 0, 10), glm::vec3 targetPosition = glm::vec3(0, 0, 0), glm::vec3 worldUpDirection = glm::vec3(0, 1, 0));
+    Camera(glm::vec3 cameraPosition = glm::vec3(0, 0, 10), float pitch = glm::radians(0.0f), float yaw = glm::radians(0.0f), glm::vec3 worldUpDirection = glm::vec3(0, 1, 0));
     glm::vec3 m_CameraPosition;
     glm::vec3 m_TargetPosition;
     glm::vec3 m_WorldUpDirection;
