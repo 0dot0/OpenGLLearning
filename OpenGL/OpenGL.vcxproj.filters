@@ -15,6 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,10 +26,14 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
+=======
+    <ClCompile Include="src\Application.cpp">
+>>>>>>> 25fb2efc3d5eed6a0bed7670e4e0c0c12032458a
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< HEAD
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,5 +59,8 @@
     <Image Include="awesomeface.png">
       <Filter>Resource Files</Filter>
     </Image>
+=======
+    <None Include="res\shader\Basic.shader" />
+>>>>>>> 25fb2efc3d5eed6a0bed7670e4e0c0c12032458a
   </ItemGroup>
 </Project>
